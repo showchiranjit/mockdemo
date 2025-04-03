@@ -1,1 +1,12 @@
-learning chatgpt from texg
+const PngToSvg = () => {
+  return (
+    <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <image 
+        href="https://google.com/1.png" 
+        width="200" 
+        height="200" 
+        preserveAspectRatio="xMidYMid meet"
+      />
+    </svg>
+  );
+};
