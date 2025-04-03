@@ -16,3 +16,18 @@ const svgIcon = {
         scaledSize: new google.maps.Size(40, 50),
         anchor: new google.maps.Point(20, 50),
       };
+
+
+
+
+ <foreignObject width="100%" height="100%">
+      <img 
+        src={imageUrl} 
+        alt="Dynamic content" 
+        style={{ 
+          width: '100%', 
+          height: '100%', 
+          objectFit: 'cover' 
+        }}
+      />
+    </foreignObject>
