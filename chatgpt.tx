@@ -1,12 +1,4 @@
-const PngToSvg = () => {
-  return (
-    <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <image 
-        href="https://google.com/1.png" 
-        width="200" 
-        height="200" 
-        preserveAspectRatio="xMidYMid meet"
-      />
-    </svg>
-  );
-};
+Should the api return servicetype be set to "delivery" when the driver returns to the store? However, we expect a "customer return" to occur. As a result, we are changing the client's view of the pick-up and drop-off addresses.
+
+
+How can I tell if a driver is en route to the store if this is typical behavior?
