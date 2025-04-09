@@ -1,4 +1,20 @@
-Should the api return servicetype be set to "delivery" when the driver returns to the store? However, we expect a "customer return" to occur. As a result, we are changing the client's view of the pick-up and drop-off addresses.
+Subject: Clarification on ServiceType Behavior During Driver Return
 
+Hi Team,
 
-How can I tell if a driver is en route to the store if this is typical behavior?
+I’d like to clarify the expected behavior of the servicetype field in the API when a driver returns to the store after delivering an order.
+
+Currently, when the driver starts returning to the store, does the servicetype switch to "delivery", or should it reflect "customer return" since we anticipate a return scenario?
+
+Additional question: If the driver has already delivered the order and begins returning to the store, will the servicetype change to "customer return" during the return trip, or will it remain as "delivery"?
+
+How can we determine if a driver is en route to the store if this is standard behavior?
+
+Also, regarding the tenant URL logo: Is it possible to update it with an SVG file instead of the current format?
+
+Could you please confirm the expected behavior and any limitations around the logo format?
+
+Thanks in advance for your help!
+
+Best regards,
+[Your Name]
