@@ -14,83 +14,39 @@ import {
   MenuList,
   Box,
   Typography,
-  Divider
-} from '@material-ui/core';
-import { Search as SearchIcon, Add as AddIcon } from '@material-ui/icons';
+  Divider,
+  Autocomplete
+} from '@mui/material';
+import {
+  Search as SearchIcon,
+  Add as AddIcon,
+  Check as CheckIcon
+} from '@mui/icons-material';
 
-const MultiSelectWithAddOption = ({
-  options: initialOptions = [],
-  selectedValues: initialSelectedValues = [],
+interface MultiSelectWithSearchProps {
+  options: string[];
+  selectedValues: string[];
+  label?: string;
+  placeholder?: string;
+  addOptionText?: string;
+  noOptionsText?: string;
+  onSelectionChange: (selected: string[]) => void;
+  onAddNewOption?: (newOption: string) => void;
+}
+
+const MultiSelectWithSearch = ({
+  options = [],
+  selectedValues = [],
   label = 'Select items',
   placeholder = 'Search...',
-  addOptionText = 'Add "{searchText}" as new option',
+  addOptionText = 'Add "{searchText}"',
   noOptionsText = 'No options found',
   onSelectionChange,
   onAddNewOption
-}) => {
-  const [options, setOptions] = useState(initialOptions);
-  const [selectedValues, setSelectedValues] = useState(initialSelectedValues);
+}: MultiSelectWithSearchProps) => {
   const [searchText, setSearchText] = useState('');
   const [open, setOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-
-  useEffect(() => {
-    setOptions(initialOptions);
-  }, [initialOptions]);
-
-  useEffect(() => {
-    setSelectedValues(initialSelectedValues);
-  }, [initialSelectedValues]);
-
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleSearchChange = (event) => {
-    setSearchText(event.target.value);
-  };
-
-  const handleToggle = (value) => {
-    const currentIndex = selectedValues.indexOf(value);
-    const newSelectedValues = [...selectedValues];
-
-    if (currentIndex === -1) {
-      newSelectedValues.push(value);
-    } else {
-      newSelectedValues.splice(currentIndex, 1);
-    }
-
-    setSelectedValues(newSelectedValues);
-    if (onSelectionChange) {
-      onSelectionChange(newSelectedValues);
-    }
-  };
-
-  const handleAddNewItem = () => {
-    if (searchText.trim() && !options.includes(searchText)) {
-      const newOptions = [...options, searchText];
-      setOptions(newOptions);
-      handleToggle(searchText);
-      if (onAddNewOption) {
-        onAddNewOption(searchText);
-      }
-      setSearchText('');
-      handleClose();
-    }
-  };
-
-  const handleDeleteChip = (value) => () => {
-    const newSelectedValues = selectedValues.filter(item => item !== value);
-    setSelectedValues(newSelectedValues);
-    if (onSelectionChange) {
-      onSelectionChange(newSelectedValues);
-    }
-  };
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const filteredOptions = options.filter(option =>
     option.toLowerCase().includes(searchText.toLowerCase())
@@ -100,25 +56,73 @@ const MultiSelectWithAddOption = ({
     !filteredOptions.includes(searchText) && 
     !options.includes(searchText);
 
+  const handleToggle = (value: string) => {
+    const currentIndex = selectedValues.indexOf(value);
+    const newSelectedValues = [...selectedValues];
+
+    if (currentIndex === -1) {
+      newSelectedValues.push(value);
+    } else {
+      newSelectedValues.splice(currentIndex, 1);
+    }
+
+    onSelectionChange(newSelectedValues);
+  };
+
+  const handleAddNewItem = () => {
+    if (searchText.trim() && !options.includes(searchText)) {
+      const newOption = searchText;
+      onSelectionChange([...selectedValues, newOption]);
+      if (onAddNewOption) {
+        onAddNewOption(newOption);
+      }
+      setSearchText('');
+      setOpen(false);
+    }
+  };
+
+  const handleDeleteChip = (value: string) => () => {
+    const newSelectedValues = selectedValues.filter(item => item !== value);
+    onSelectionChange(newSelectedValues);
+  };
+
   return (
-    <div>
+    <Box sx={{ width: '100%' }}>
       <TextField
         fullWidth
         label={label}
         placeholder={placeholder}
         value={searchText}
-        onClick={handleClick}
-        onChange={handleSearchChange}
+        onClick={(e) => {
+          setAnchorEl(e.currentTarget);
+          setOpen(true);
+        }}
+        onChange={(e) => setSearchText(e.target.value)}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
               <SearchIcon />
             </InputAdornment>
           ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddNewItem();
+                }}
+                edge="end"
+                disabled={!showAddOption}
+                size="small"
+              >
+                <AddIcon fontSize="small" />
+              </IconButton>
+            </InputAdornment>
+          )
         }}
       />
 
-      <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+      <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
         {selectedValues.map((value) => (
           <Chip
             key={value}
@@ -126,6 +130,7 @@ const MultiSelectWithAddOption = ({
             onDelete={handleDeleteChip(value)}
             color="primary"
             variant="outlined"
+            size="small"
           />
         ))}
       </Box>
@@ -133,44 +138,45 @@ const MultiSelectWithAddOption = ({
       <Popper
         open={open}
         anchorEl={anchorEl}
-        role={undefined}
+        placement="bottom-start"
         transition
         disablePortal
-        style={{ 
-          zIndex: 1300, 
-          width: anchorEl?.clientWidth,
-          maxHeight: '300px',
+        sx={{ 
+          zIndex: 1300,
+          width: anchorEl ? anchorEl.clientWidth : undefined,
+          maxHeight: 300,
           overflow: 'auto'
         }}
       >
-        {({ TransitionProps, placement }) => (
-          <Grow
-            {...TransitionProps}
-            style={{
-              transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
-            }}
-          >
+        {({ TransitionProps }) => (
+          <Grow {...TransitionProps}>
             <Paper elevation={3}>
-              <ClickAwayListener onClickAway={handleClose}>
-                <MenuList autoFocusItem={open}>
+              <ClickAwayListener onClickAway={() => setOpen(false)}>
+                <MenuList autoFocusItem={open} dense>
                   {filteredOptions.length > 0 ? (
                     filteredOptions.map((option) => (
                       <MenuItem
                         key={option}
-                        value={option}
                         onClick={() => handleToggle(option)}
+                        sx={{
+                          py: 0.5,
+                          minHeight: 'auto'
+                        }}
                       >
                         <Checkbox 
-                          checked={selectedValues.indexOf(option) > -1} 
-                          color="primary"
+                          checked={selectedValues.includes(option)}
+                          size="small"
+                          sx={{ py: 0.5 }}
+                          icon={<span />}
+                          checkedIcon={<CheckIcon fontSize="small" />}
                         />
-                        <ListItemText primary={option} />
+                        <ListItemText primary={option} sx={{ my: 0 }} />
                       </MenuItem>
                     ))
                   ) : (
                     !showAddOption && (
                       <MenuItem disabled>
-                        <Typography variant="body2" color="textSecondary">
+                        <Typography variant="body2" color="text.secondary">
                           {noOptionsText}
                         </Typography>
                       </MenuItem>
@@ -182,11 +188,15 @@ const MultiSelectWithAddOption = ({
                       {filteredOptions.length > 0 && <Divider />}
                       <MenuItem
                         onClick={handleAddNewItem}
-                        style={{ backgroundColor: 'rgba(0, 0, 0, 0.04)' }}
+                        sx={{
+                          backgroundColor: 'action.hover',
+                          py: 0.5,
+                          minHeight: 'auto'
+                        }}
                       >
-                        <Box display="flex" alignItems="center">
-                          <AddIcon color="primary" style={{ marginRight: 8 }} />
-                          <Typography color="primary">
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <AddIcon color="primary" fontSize="small" />
+                          <Typography color="primary" variant="body2">
                             {addOptionText.replace('{searchText}', searchText)}
                           </Typography>
                         </Box>
@@ -199,8 +209,8 @@ const MultiSelectWithAddOption = ({
           </Grow>
         )}
       </Popper>
-    </div>
+    </Box>
   );
 };
 
-export default MultiSelectWithAddOption;
+export default MultiSelectWithSearch;
