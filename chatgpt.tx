@@ -11,16 +11,22 @@ import {
   Popper,
   Grow,
   ClickAwayListener,
-  MenuList
+  MenuList,
+  Box,
+  Typography,
+  Divider
 } from '@material-ui/core';
 import { Search as SearchIcon, Add as AddIcon } from '@material-ui/icons';
 
-const MultiSelectWithSearch = ({
+const MultiSelectWithAddOption = ({
   options: initialOptions = [],
   selectedValues: initialSelectedValues = [],
   label = 'Select items',
   placeholder = 'Search...',
-  onSelectionChange
+  addOptionText = 'Add "{searchText}" as new option',
+  noOptionsText = 'No options found',
+  onSelectionChange,
+  onAddNewOption
 }) => {
   const [options, setOptions] = useState(initialOptions);
   const [selectedValues, setSelectedValues] = useState(initialSelectedValues);
@@ -70,7 +76,11 @@ const MultiSelectWithSearch = ({
       const newOptions = [...options, searchText];
       setOptions(newOptions);
       handleToggle(searchText);
+      if (onAddNewOption) {
+        onAddNewOption(searchText);
+      }
       setSearchText('');
+      handleClose();
     }
   };
 
@@ -85,6 +95,10 @@ const MultiSelectWithSearch = ({
   const filteredOptions = options.filter(option =>
     option.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  const showAddOption = searchText.trim() && 
+    !filteredOptions.includes(searchText) && 
+    !options.includes(searchText);
 
   return (
     <div>
@@ -101,33 +115,20 @@ const MultiSelectWithSearch = ({
               <SearchIcon />
             </InputAdornment>
           ),
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddNewItem();
-                }}
-                edge="end"
-                disabled={!searchText.trim()}
-              >
-                <AddIcon />
-              </IconButton>
-            </InputAdornment>
-          )
         }}
       />
 
-      <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+      <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
         {selectedValues.map((value) => (
           <Chip
             key={value}
             label={value}
             onDelete={handleDeleteChip(value)}
-            style={{ margin: 2 }}
+            color="primary"
+            variant="outlined"
           />
         ))}
-      </div>
+      </Box>
 
       <Popper
         open={open}
@@ -135,7 +136,12 @@ const MultiSelectWithSearch = ({
         role={undefined}
         transition
         disablePortal
-        style={{ zIndex: 1300, width: anchorEl?.clientWidth }}
+        style={{ 
+          zIndex: 1300, 
+          width: anchorEl?.clientWidth,
+          maxHeight: '300px',
+          overflow: 'auto'
+        }}
       >
         {({ TransitionProps, placement }) => (
           <Grow
@@ -144,9 +150,9 @@ const MultiSelectWithSearch = ({
               transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
             }}
           >
-            <Paper>
+            <Paper elevation={3}>
               <ClickAwayListener onClickAway={handleClose}>
-                <MenuList autoFocusItem={open} id="menu-list-grow">
+                <MenuList autoFocusItem={open}>
                   {filteredOptions.length > 0 ? (
                     filteredOptions.map((option) => (
                       <MenuItem
@@ -154,14 +160,38 @@ const MultiSelectWithSearch = ({
                         value={option}
                         onClick={() => handleToggle(option)}
                       >
-                        <Checkbox checked={selectedValues.indexOf(option) > -1} />
+                        <Checkbox 
+                          checked={selectedValues.indexOf(option) > -1} 
+                          color="primary"
+                        />
                         <ListItemText primary={option} />
                       </MenuItem>
                     ))
                   ) : (
-                    <MenuItem disabled>
-                      No options found
-                    </MenuItem>
+                    !showAddOption && (
+                      <MenuItem disabled>
+                        <Typography variant="body2" color="textSecondary">
+                          {noOptionsText}
+                        </Typography>
+                      </MenuItem>
+                    )
+                  )}
+
+                  {showAddOption && (
+                    <>
+                      {filteredOptions.length > 0 && <Divider />}
+                      <MenuItem
+                        onClick={handleAddNewItem}
+                        style={{ backgroundColor: 'rgba(0, 0, 0, 0.04)' }}
+                      >
+                        <Box display="flex" alignItems="center">
+                          <AddIcon color="primary" style={{ marginRight: 8 }} />
+                          <Typography color="primary">
+                            {addOptionText.replace('{searchText}', searchText)}
+                          </Typography>
+                        </Box>
+                      </MenuItem>
+                    </>
                   )}
                 </MenuList>
               </ClickAwayListener>
@@ -173,4 +203,4 @@ const MultiSelectWithSearch = ({
   );
 };
 
-export default MultiSelectWithSearch;
+export default MultiSelectWithAddOption;
