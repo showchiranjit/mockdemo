@@ -1,20 +1,176 @@
-Subject: Clarification on ServiceType Behavior During Driver Return
+import React, { useState, useEffect } from 'react';
+import {
+  TextField,
+  Chip,
+  MenuItem,
+  Checkbox,
+  ListItemText,
+  InputAdornment,
+  IconButton,
+  Paper,
+  Popper,
+  Grow,
+  ClickAwayListener,
+  MenuList
+} from '@material-ui/core';
+import { Search as SearchIcon, Add as AddIcon } from '@material-ui/icons';
 
-Hi Team,
+const MultiSelectWithSearch = ({
+  options: initialOptions = [],
+  selectedValues: initialSelectedValues = [],
+  label = 'Select items',
+  placeholder = 'Search...',
+  onSelectionChange
+}) => {
+  const [options, setOptions] = useState(initialOptions);
+  const [selectedValues, setSelectedValues] = useState(initialSelectedValues);
+  const [searchText, setSearchText] = useState('');
+  const [open, setOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
 
-I’d like to clarify the expected behavior of the servicetype field in the API when a driver returns to the store after delivering an order.
+  useEffect(() => {
+    setOptions(initialOptions);
+  }, [initialOptions]);
 
-Currently, when the driver starts returning to the store, does the servicetype switch to "delivery", or should it reflect "customer return" since we anticipate a return scenario?
+  useEffect(() => {
+    setSelectedValues(initialSelectedValues);
+  }, [initialSelectedValues]);
 
-Additional question: If the driver has already delivered the order and begins returning to the store, will the servicetype change to "customer return" during the return trip, or will it remain as "delivery"?
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+    setOpen(true);
+  };
 
-How can we determine if a driver is en route to the store if this is standard behavior?
+  const handleClose = () => {
+    setOpen(false);
+  };
 
-Also, regarding the tenant URL logo: Is it possible to update it with an SVG file instead of the current format?
+  const handleSearchChange = (event) => {
+    setSearchText(event.target.value);
+  };
 
-Could you please confirm the expected behavior and any limitations around the logo format?
+  const handleToggle = (value) => {
+    const currentIndex = selectedValues.indexOf(value);
+    const newSelectedValues = [...selectedValues];
 
-Thanks in advance for your help!
+    if (currentIndex === -1) {
+      newSelectedValues.push(value);
+    } else {
+      newSelectedValues.splice(currentIndex, 1);
+    }
 
-Best regards,
-[Your Name]
+    setSelectedValues(newSelectedValues);
+    if (onSelectionChange) {
+      onSelectionChange(newSelectedValues);
+    }
+  };
+
+  const handleAddNewItem = () => {
+    if (searchText.trim() && !options.includes(searchText)) {
+      const newOptions = [...options, searchText];
+      setOptions(newOptions);
+      handleToggle(searchText);
+      setSearchText('');
+    }
+  };
+
+  const handleDeleteChip = (value) => () => {
+    const newSelectedValues = selectedValues.filter(item => item !== value);
+    setSelectedValues(newSelectedValues);
+    if (onSelectionChange) {
+      onSelectionChange(newSelectedValues);
+    }
+  };
+
+  const filteredOptions = options.filter(option =>
+    option.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  return (
+    <div>
+      <TextField
+        fullWidth
+        label={label}
+        placeholder={placeholder}
+        value={searchText}
+        onClick={handleClick}
+        onChange={handleSearchChange}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddNewItem();
+                }}
+                edge="end"
+                disabled={!searchText.trim()}
+              >
+                <AddIcon />
+              </IconButton>
+            </InputAdornment>
+          )
+        }}
+      />
+
+      <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+        {selectedValues.map((value) => (
+          <Chip
+            key={value}
+            label={value}
+            onDelete={handleDeleteChip(value)}
+            style={{ margin: 2 }}
+          />
+        ))}
+      </div>
+
+      <Popper
+        open={open}
+        anchorEl={anchorEl}
+        role={undefined}
+        transition
+        disablePortal
+        style={{ zIndex: 1300, width: anchorEl?.clientWidth }}
+      >
+        {({ TransitionProps, placement }) => (
+          <Grow
+            {...TransitionProps}
+            style={{
+              transformOrigin: placement === 'bottom' ? 'center top' : 'center bottom',
+            }}
+          >
+            <Paper>
+              <ClickAwayListener onClickAway={handleClose}>
+                <MenuList autoFocusItem={open} id="menu-list-grow">
+                  {filteredOptions.length > 0 ? (
+                    filteredOptions.map((option) => (
+                      <MenuItem
+                        key={option}
+                        value={option}
+                        onClick={() => handleToggle(option)}
+                      >
+                        <Checkbox checked={selectedValues.indexOf(option) > -1} />
+                        <ListItemText primary={option} />
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>
+                      No options found
+                    </MenuItem>
+                  )}
+                </MenuList>
+              </ClickAwayListener>
+            </Paper>
+          </Grow>
+        )}
+      </Popper>
+    </div>
+  );
+};
+
+export default MultiSelectWithSearch;
