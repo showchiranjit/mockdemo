@@ -1,6 +1,6 @@
 // src/components/AssignDropdown.js
 import React, { useState } from 'react';
-import { TextField, Chip, MenuItem, Select, InputLabel, FormControl, IconButton, Popover } from '@mui/material';
+import { TextField, Chip, MenuItem, Select, InputLabel, FormControl, IconButton, Popover, Button } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -8,7 +8,7 @@ const AssignDropdown = () => {
     const [chips, setChips] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
-    const options = ['a0de0w', 'a0de0es', 'a0j0c4k', 'dwe8921']; // Example options
+    const [options, setOptions] = useState(['a0de0w', 'a0de0es', 'a0j0c4k', 'dwe8921']); // Initial options
 
     const handleChipDelete = (chipToDelete) => {
         setChips((chips) => chips.filter((chip) => chip !== chipToDelete));
@@ -31,7 +31,14 @@ const AssignDropdown = () => {
         if (!chips.includes(option)) {
             setChips([...chips, option]);
         }
-        handleClose();
+        setSearchTerm('');
+    };
+
+    const handleAddNewOption = () => {
+        if (searchTerm && !options.includes(searchTerm)) {
+            setOptions([...options, searchTerm]);
+            handleAddChip(searchTerm);
+        }
     };
 
     const open = Boolean(anchorEl);
@@ -43,8 +50,16 @@ const AssignDropdown = () => {
                 <InputLabel id="assign-to-label">Assigned to</InputLabel>
                 <Select
                     labelId="assign-to-label"
+                    multiple
                     onClick={handleDropdownClick}
-                    displayEmpty
+                    value={chips}
+                    renderValue={(selected) => (
+                        <div>
+                            {selected.map((value) => (
+                                <Chip key={value} label={value} onDelete={() => handleChipDelete(value)} />
+                            ))}
+                        </div>
+                    )}
                 >
                     <MenuItem disabled value="">
                         <em>Select an option</em>
@@ -74,12 +89,12 @@ const AssignDropdown = () => {
                 <div style={{ padding: '16px' }}>
                     <TextField
                         variant="outlined"
-                        placeholder="Search..."
+                        placeholder="Search or add..."
                         value={searchTerm}
                         onChange={handleSearchChange}
                         InputProps={{
                             endAdornment: (
-                                <IconButton>
+                                <IconButton onClick={handleAddNewOption}>
                                     <SearchIcon />
                                 </IconButton>
                             ),
@@ -92,9 +107,8 @@ const AssignDropdown = () => {
                                 <Chip
                                     key={option}
                                     label={option}
-                                    onDelete={() => handleAddChip(option)}
-                                    deleteIcon={<CloseIcon />}
-                                    style={{ margin: '4px' }}
+                                    onClick={() => handleAddChip(option)}
+                                    style={{ margin: '4px', cursor: 'pointer' }}
                                 />
                             ))}
                     </div>
