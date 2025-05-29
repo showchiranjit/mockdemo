@@ -1,121 +1,17 @@
-// src/components/AssignDropdown.js
-import React, { useState } from 'react';
-import { TextField, Chip, MenuItem, Select, InputLabel, FormControl, IconButton, Popover, Button } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import CloseIcon from '@mui/icons-material/Close';
+Current Status: Exploring Nx Monorepo & Investigating TailwindCSS Issue
 
-const AssignDropdown = () => {
-    const [chips, setChips] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [options, setOptions] = useState(['a0de0w', 'a0de0es', 'a0j0c4k', 'dwe8921']); // Initial options
+I'm currently working with an Nx monorepo and investigating why TailwindCSS isn't loading properly in our application.
 
-    const handleChipDelete = (chipToDelete) => {
-        setChips((chips) => chips.filter((chip) => chip !== chipToDelete));
-    };
+Steps Taken:
 
-    const handleSearchChange = (event) => {
-        setSearchTerm(event.target.value);
-    };
+Followed the official documentation for setting up TailwindCSS in the Nx monorepo.
 
-    const handleDropdownClick = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
+Verified configurations, but the styles are still not being applied as expected.
 
-    const handleClose = () => {
-        setAnchorEl(null);
-        setSearchTerm('');
-    };
+Next Steps:
 
-    const handleAddChip = (option) => {
-        if (!chips.includes(option)) {
-            setChips([...chips, option]);
-        }
-        setSearchTerm('');
-    };
+Double-check PostCSS and Tailwind configurations.
 
-    const handleAddNewOption = () => {
-        if (searchTerm && !options.includes(searchTerm)) {
-            setOptions([...options, searchTerm]);
-            handleAddChip(searchTerm);
-        }
-    };
+Review module dependencies and build processes.
 
-    const open = Boolean(anchorEl);
-    const id = open ? 'simple-popover' : undefined;
-
-    return (
-        <div>
-            <FormControl fullWidth>
-                <InputLabel id="assign-to-label">Assigned to</InputLabel>
-                <Select
-                    labelId="assign-to-label"
-                    multiple
-                    onClick={handleDropdownClick}
-                    value={chips}
-                    renderValue={(selected) => (
-                        <div>
-                            {selected.map((value) => (
-                                <Chip key={value} label={value} onDelete={() => handleChipDelete(value)} />
-                            ))}
-                        </div>
-                    )}
-                >
-                    <MenuItem disabled value="">
-                        <em>Select an option</em>
-                    </MenuItem>
-                    {chips.map((chip) => (
-                        <MenuItem key={chip} value={chip}>
-                            {chip}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-
-            <Popover
-                id={id}
-                open={open}
-                anchorEl={anchorEl}
-                onClose={handleClose}
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'left',
-                }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-            >
-                <div style={{ padding: '16px' }}>
-                    <TextField
-                        variant="outlined"
-                        placeholder="Search or add..."
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton onClick={handleAddNewOption}>
-                                    <SearchIcon />
-                                </IconButton>
-                            ),
-                        }}
-                    />
-                    <div style={{ marginTop: '8px' }}>
-                        {options
-                            .filter(option => option.includes(searchTerm))
-                            .map(option => (
-                                <Chip
-                                    key={option}
-                                    label={option}
-                                    onClick={() => handleAddChip(option)}
-                                    style={{ margin: '4px', cursor: 'pointer' }}
-                                />
-                            ))}
-                    </div>
-                </div>
-            </Popover>
-        </div>
-    );
-};
-
-export default AssignDropdown;
+Debug potential path or scoping issues.
